@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // middle ware
 
@@ -21,7 +21,7 @@ async function run() {
         const reviewsCollection = client.db('toolsegy').collection('reviews');
         const clientsCollection = client.db('toolsegy').collection('clients');
 
-        // products api
+        // PRODUCTS API
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productsCollection.find(query);
@@ -29,7 +29,15 @@ async function run() {
             res.send(products);
         })
 
-        // reviews api
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await productsCollection.findOne(query);
+            console.log(product)
+            res.send(product);
+        })
+
+        // REVIEWS API
 
         app.get('/reviews', async (req, res) => {
             const query = {};
@@ -38,7 +46,8 @@ async function run() {
             res.send(reviews);
         })
 
-        // client api
+
+        // CLIENT API
 
         app.get('/clients', async (req, res) => {
             const query = {};
