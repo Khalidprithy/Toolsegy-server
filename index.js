@@ -18,6 +18,7 @@ async function run() {
     try {
         await client.connect();
         const productsCollection = client.db('toolsegy').collection('products');
+        const purchaseCollection = client.db('toolsegy').collection('purchase');
         const reviewsCollection = client.db('toolsegy').collection('reviews');
         const clientsCollection = client.db('toolsegy').collection('clients');
 
@@ -35,6 +36,21 @@ async function run() {
             const product = await productsCollection.findOne(query);
             console.log(product)
             res.send(product);
+        })
+
+
+        // PURCHASE API
+
+        app.post('/purchase', async (req, res) => {
+            const purchase = req.body;
+            const query = { product: purchase.productId, product: purchase.email }
+            console.log(query)
+            const exists = await purchaseCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, purchase: exists })
+            }
+            const result = await purchaseCollection.insertOne(purchase);
+            return res.send({ success: true, result });
         })
 
         // REVIEWS API
