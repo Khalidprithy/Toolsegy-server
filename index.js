@@ -15,6 +15,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+// Verify jwt token
 
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -42,6 +43,8 @@ async function run() {
         const clientsCollection = client.db('toolsegy').collection('clients');
         const usersCollection = client.db('toolsegy').collection('users');
 
+        // Verify admin 
+
         const verifyAdmin = async (req, res, next) => {
             const requester = req.decoded.email;
             const requesterAccount = await usersCollection.findOne({ email: requester });
@@ -53,10 +56,9 @@ async function run() {
             }
         }
 
-
-
-
         // PRODUCTS API
+
+        // Get all products
         app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productsCollection.find(query);
@@ -64,6 +66,7 @@ async function run() {
             res.send(products);
         })
 
+        // Find one product
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -72,6 +75,7 @@ async function run() {
             res.send(product);
         })
 
+        // Add one product
         app.post('/products', verifyJWT, verifyAdmin, async (req, res) => {
             const product = req.body;
             const result = await productsCollection.insertOne(product);
@@ -80,11 +84,13 @@ async function run() {
 
         // USER API
 
+        // Load all user
         app.get('/user', verifyJWT, async (req, res) => {
             const users = await usersCollection.find().toArray();
             res.send(users)
         })
 
+        // Find Admin
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await usersCollection.findOne({ email: email });
@@ -92,6 +98,7 @@ async function run() {
             res.send({ admin: isAdmin })
         })
 
+        // Make Admin
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
@@ -103,7 +110,7 @@ async function run() {
 
         })
 
-
+        // Add new user
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -121,6 +128,7 @@ async function run() {
 
         // PURCHASE API
 
+        // Make Order
         app.post('/purchase', async (req, res) => {
             const purchase = req.body;
             const query = { product: purchase.name, product: purchase.email }
@@ -133,7 +141,8 @@ async function run() {
             return res.send({ success: true, result });
         })
 
-        app.get('/purchase/:email', verifyJWT, async (req, res) => {
+        // Find one user's orders by email
+        app.get('/purchase', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
             if (email === decodedEmail) {
@@ -146,14 +155,14 @@ async function run() {
             }
         })
 
-        app.get('/purchase', verifyJWT, verifyAdmin, async (req, res) => {
-            const query = {};
-            const cursor = purchaseCollection.find(query);
-            const orders = await cursor.toArray();
+        // Load all orders
+        app.get('/allOrder', verifyJWT, verifyAdmin, async (req, res) => {
+            const orders = await purchaseCollection.find().toArray();
             console.log(orders)
             res.send(orders);
         })
 
+        // Delete an order
         app.delete('/purchase/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
@@ -161,6 +170,7 @@ async function run() {
             res.send(result);
         })
 
+        // Find an order by ID
         app.get('/purchase/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -170,6 +180,7 @@ async function run() {
 
         // REVIEWS API
 
+        // Load all reviews
         app.get('/reviews', async (req, res) => {
             const query = {};
             const cursor = reviewsCollection.find(query);
@@ -180,6 +191,7 @@ async function run() {
 
         // CLIENT API
 
+        // Load all clients
         app.get('/clients', async (req, res) => {
             const query = {};
             const cursor = clientsCollection.find(query);
