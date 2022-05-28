@@ -174,7 +174,7 @@ async function run() {
         app.get('/purchase/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
-            const payment = purchaseCollection.findOne(query);
+            const payment = await purchaseCollection.findOne(query);
             res.send(payment);
         })
 
