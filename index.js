@@ -91,6 +91,11 @@ async function run() {
             const users = await usersCollection.find().toArray();
             res.send(users)
         })
+        app.get('/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const users = await usersCollection.findOne({ email: email }).toArray();
+            res.send(users)
+        })
 
         // Find Admin
         app.get('/admin/:email', async (req, res) => {
@@ -204,6 +209,13 @@ async function run() {
             const cursor = reviewsCollection.find(query);
             const reviews = await cursor.toArray();
             res.send(reviews);
+        })
+
+        // Add review
+        app.post('/reviews', async (req, res) => {
+            const review = req.body;
+            const result = await reviewsCollection.insertOne(review);
+            res.send(result)
         })
 
 
